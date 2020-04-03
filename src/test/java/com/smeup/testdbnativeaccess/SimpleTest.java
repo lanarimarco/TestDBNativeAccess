@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.smeup.testdbnativeaccessfromjava;
+package com.smeup.testdbnativeaccess;
 
 import com.smeup.dbnative.BigintType;
 import com.smeup.dbnative.DBField;
