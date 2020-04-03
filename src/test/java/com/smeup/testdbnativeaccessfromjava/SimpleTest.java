@@ -30,10 +30,13 @@ public class SimpleTest {
     
     private static final String LIB = "LIBRARY_TEST";
     private static final String FILE = "FILE_TEST";
-    private static DBMetadata DB_METADATA;
+    private static SQLDBMManager DB;
     
+    /**
+     *Mi creo una istanza di DB con la libreria LIB ed il file FILE
+     */
     @BeforeClass
-    public static void createDbMatadata() {
+    public static void createDBMManagerInstance() {
         List<DBField> fields = new ArrayList<>();
         //definisco ID primary key
         fields.add(new DBField("ID", BigintType.INSTANCE, true, true, true));
@@ -41,21 +44,22 @@ public class SimpleTest {
         fields.add(new DBField("NAME", new VarcharType(50), false, false, true));
         //definisco campo RATING che puà essere null
         fields.add(new DBField("RATING", SmallintType.INSTANCE, false, false, false));
-        DB_METADATA = new DBMetadata(FILE, fields);
+        DBMetadata  metadata = new DBMetadata(FILE, fields);
+        DB = new SQLDBMManager();
+        String url = "jdbc:hsqldb:mem:";
+        DB.setConnectionData(url, "sa", "sa");
+        if (!DB.existLib(LIB)) {
+            DB.createLib(LIB);
+        }
+        if (!DB.existFile(LIB, FILE)) {
+            DB.createFile(LIB, metadata);
+        }
     }
     
     @Test
     public void run() {
-        SQLDBMManager dbmm = new SQLDBMManager();
-        String url = "jdbc:hsqldb:mem:";
-        dbmm.setConnectionData(url, "sa", "sa");
-        if (!dbmm.existLib(LIB)) {
-            dbmm.createLib(LIB);
-        }
-        if (!dbmm.existFile(LIB, FILE)) {
-            dbmm.createFile(LIB, DB_METADATA);
-        }
-        DBFile dbFile = dbmm.openFile(LIB, FILE);
+        //Apro il file
+        DBFile dbFile = DB.openFile(LIB, FILE);
         
         //Creo il primo record
         Record r1 = new Record(
@@ -78,7 +82,7 @@ public class SimpleTest {
         Assert.assertTrue("Mi posiziono su record con ID=2", dbFile.setll(Arrays.asList(new RecordField("ID", "2"))));
         Assert.assertEquals("Leggo il record corrente", w2, dbFile.read());
         Assert.assertEquals("Leggo il precedente", w1, dbFile.readPrevious());
-        dbmm.closeFile(LIB, FILE);
+        DB.closeFile(LIB, FILE);
     }
     
 }
