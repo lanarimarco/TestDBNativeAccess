@@ -37,16 +37,14 @@ public class SimpleTest {
     private SQLDBMManager manager;
     private DBFileFactory fileFactory;
 
-    /**
-     * Mi creo una istanza di DB con la libreria LIB ed il file FILE
-     */
     @Before
     public void setUp() {
         ConnectionConfig config
-          = new ConnectionConfig(FILE, "jdbc:hsqldb:mem:TEST", "sa", "sa", new HashMap<String, String>());
+          = new ConnectionConfig(FILE, "jdbc:hsqldb:mem:TEST", "sa", "sa", new HashMap<>());
+        //creo il manager perché devo creare il file
         manager = new SQLDBMManager(config);
-        fileFactory = new DBFileFactory(new DBNativeAccessConfig(Arrays.asList(config)), (p1) -> {
-            return p1;
+        fileFactory = new DBFileFactory(new DBNativeAccessConfig(Arrays.asList(config)), fileName -> {
+            return fileName.replaceAll("/", "\\.");
         });
         List<DBField> fields = new ArrayList<>();
         //definisco ID primary key
@@ -92,8 +90,12 @@ public class SimpleTest {
     
     @After
     public void tearDown() {
-        manager.close();
-        fileFactory.close();
+        if (manager != null) {
+            manager.close();
+        }
+        if (fileFactory != null) {
+            fileFactory.close();
+        }
     }
     
 
